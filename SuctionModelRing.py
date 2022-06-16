@@ -42,11 +42,15 @@ class SuctionModelRing:
         
         # equation 1
         dpdt = 0.0
+        if self.chi(p) >= 0:
+            dpdt += - (self.sol.comp.p_suc * self.sol.comp.omega) * ((1 - self.chi(p)) * self.sol.comp.k * self.f_func_deriv(t) / self.f_func(t))
+        else:
+            dpdt += - (self.sol.comp.p_suc * self.sol.comp.omega) * ((1 + self.chi(p)) * self.sol.comp.k * self.f_func_deriv(t) / self.f_func(t))
         for i in range(len(self.sol.suc_plates)):
             if self.chi(p) >= 0:
-                dpdt += - (self.sol.comp.p_suc * self.sol.comp.omega) * ((1 - self.chi(p)) * self.sol.comp.k * self.f_func_deriv(t) / self.f_func(t) - self.sol.suc_plates[i].alpha_gap(xs[0+2*i]) * self.sol.suc_plates[i].f_gap(xs[0+2*i]) * np.sqrt(2.0 * self.sol.comp.k ** 3.0/ (self.sol.comp.k - 1.0)) * np.sqrt(self.sol.comp.R * self.sol.comp.T_suc) * np.sqrt((1.0 - self.chi(p)) ** (2.0 / self.sol.comp.k) - (1.0 - self.chi(p)) ** ((self.sol.comp.k + 1) / self.sol.comp.k)) / (self.sol.comp.Fp * self.sol.comp.r * self.sol.comp.omega * self.f_func(t)) )
+                dpdt += - (self.sol.comp.p_suc * self.sol.comp.omega) * (- self.sol.suc_plates[i].alpha_gap(xs[0+2*i]) * self.sol.suc_plates[i].f_gap(xs[0+2*i]) * np.sqrt(2.0 * self.sol.comp.k ** 3.0/ (self.sol.comp.k - 1.0)) * np.sqrt(self.sol.comp.R * self.sol.comp.T_suc) * np.sqrt((1.0 - self.chi(p)) ** (2.0 / self.sol.comp.k) - (1.0 - self.chi(p)) ** ((self.sol.comp.k + 1) / self.sol.comp.k)) / (self.sol.comp.Fp * self.sol.comp.r * self.sol.comp.omega * self.f_func(t)) )
             else:
-                dpdt += - (self.sol.comp.p_suc * self.sol.comp.omega) * ((1 + self.chi(p)) * self.sol.comp.k * self.f_func_deriv(t) / self.f_func(t) - self.sol.suc_plates[i].alpha_gap(xs[0+2*i]) * self.sol.suc_plates[i].f_gap(xs[0+2*i]) * np.sqrt(2.0 * self.sol.comp.k ** 3.0/ (self.sol.comp.k - 1.0)) * np.sqrt(self.sol.comp.R * self.sol.comp.T_suc) * np.sqrt((1.0 + self.chi(p)) ** (2.0 / self.sol.comp.k) - (1.0 + self.chi(p)) ** ((self.sol.comp.k + 1) / self.sol.comp.k)) / (self.sol.comp.Fp * self.sol.comp.r * self.sol.comp.omega * self.f_func(t)) )
+                dpdt += - (self.sol.comp.p_suc * self.sol.comp.omega) * (- self.sol.suc_plates[i].alpha_gap(xs[0+2*i]) * self.sol.suc_plates[i].f_gap(xs[0+2*i]) * np.sqrt(2.0 * self.sol.comp.k ** 3.0/ (self.sol.comp.k - 1.0)) * np.sqrt(self.sol.comp.R * self.sol.comp.T_suc) * np.sqrt((1.0 + self.chi(p)) ** (2.0 / self.sol.comp.k) - (1.0 + self.chi(p)) ** ((self.sol.comp.k + 1) / self.sol.comp.k)) / (self.sol.comp.Fp * self.sol.comp.r * self.sol.comp.omega * self.f_func(t)) )
               
         # equation 2
         for i in range(len(self.sol.suc_plates)):
