@@ -1,16 +1,17 @@
 import numpy as np
 from scipy.integrate import solve_ivp
-from RingDis import RingDis
-from RingSuc import RingSuc
-from SuctionModelRing import SuctionModelRing
-from DischargeModelRing import DischargeModelRing
-from DataFrame import DataFrame
+from ring_valve_calc.RingDis import RingDis
+from ring_valve_calc.RingSuc import RingSuc
+from ring_valve_calc.SuctionModelRing import SuctionModelRing
+from ring_valve_calc.DischargeModelRing import DischargeModelRing
+from ring_valve_calc.DataFrame import DataFrame
 
 
 class Solver:
-    def __init__(self, compressor):
+    def __init__(self, compressor, progress_val_int):
         self.comp = compressor
         self.relative_step = 0.001
+        self.progress_val_int = progress_val_int
     
     def run(self, plates, n_interations=1):
         # check the presence of suction and discharge plates
@@ -32,13 +33,14 @@ class Solver:
             # start solver params
             t_3 = np.radians(0) / self.comp.omega
             p_3 = self.comp.p_dis
-            for _ in range(n_interations):
+            for i in range(n_interations):
                 self.comp.calc_cycle_suc(t_3=t_3, p_3=p_3)
                 init_values = [self.comp.p_4] + [0.0 for _ in range(len(self.suc_plates) * 2)]
                 result_suc, t_1, p_1 = self.solve(init_values=init_values, time_range=(self.comp.phi_4/self.comp.omega, (self.comp.phi_4+np.pi*2.0)/self.comp.omega), curr_plates=self.suc_plates, model=self.suc_model)
                 self.comp.calc_cycle_dis(t_1=t_1, p_1=p_1)
                 init_values = [self.comp.p_2] + [0.0 for _ in range(len(self.dis_plates) * 2)]
                 result_dis, t_3, p_3 = self.solve(init_values=init_values, time_range=(self.comp.phi_2/self.comp.omega, (self.comp.phi_2+np.pi*2.0)/self.comp.omega), curr_plates=self.dis_plates, model=self.dis_model)
+                self.progress_val_int.emit(int((i + 1) / n_interations * 100.0))
         return result_suc, result_dis
 
     def solve(self, init_values, time_range, curr_plates, model):
